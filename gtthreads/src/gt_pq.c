@@ -266,8 +266,6 @@ extern uthread_struct_t *sched_find_best_uthread(kthread_runqueue_t *kthread_run
 		}
 
 	}
-
-	printf("something in expiry\n");
 	
 	/* Find the highest priority bucket */
 	uprio = LOWEST_BIT_SET(runq->uthread_mask);

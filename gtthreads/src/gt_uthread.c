@@ -40,7 +40,7 @@ extern void gt_yield()
 {
 	kthread_context_t *k_ctx;
 	uthread_struct_t *u_obj;
-	kthread_runqueue_t *kthread_runq
+	kthread_runqueue_t *kthread_runq;
 
 	k_ctx = kthread_cpu_map[kthread_apic_id()];
 	kthread_runq = &(k_ctx->krunqueue);
@@ -149,24 +149,24 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 	if((u_obj = kthread_runq->cur_uthread))
 	{	
 
+	
+		printf("setting cpu runtime for Thread(id:%d)\n", u_obj->uthread_tid);
+		gettimeofday(&u_obj->curr_end_time, NULL);
+		struct timeval curr_cpu_run_time;
+		
+		//get curr cpu runtime
+		timersub(&(u_obj->curr_end_time), &(u_obj->curr_start_time), &curr_cpu_run_time);
+		//get total cpu runtime
+		timeradd(&(u_obj->total_cpu_time), &curr_cpu_run_time, &(u_obj->total_cpu_time));
 
 		if(ksched_shared_info.sched_mode==1)
-		{	
-			printf("setting cpu runtime for Thread(id:%d)\n", u_obj->uthread_tid);
-			gettimeofday(&u_obj->curr_end_time, NULL);
-			struct timeval curr_cpu_run_time;
-			
-			//get curr cpu runtime
-			timersub(&(u_obj->curr_end_time), &(u_obj->curr_start_time), &curr_cpu_run_time);
-			//get total cpu runtime
-			timeradd(&(u_obj->total_cpu_time), &curr_cpu_run_time, &(u_obj->total_cpu_time));
-
+		{
 			//update credits
 			// 10c/30ms
 			float deduct_rate = 10.0/30000.0;
 			u_obj->remaining_credits -= (int) deduct_rate* ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec));
-
 		}
+		
 
 
 		/*Go through the runq and schedule the next thread to run */
@@ -320,7 +320,6 @@ extern kthread_runqueue_t *ksched_find_target(uthread_struct_t *);
 
 extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, uthread_group_t u_gid, int u_credit, int matrix_size)
 {	
-	printf("reached here 1\n");
 	kthread_runqueue_t *kthread_runq;
 	uthread_struct_t *u_new;
 
@@ -342,7 +341,8 @@ extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, 
 	u_new->uthread_arg = u_arg;
 	u_new->alloted_credits = u_credit;
 	u_new->remaining_credits = u_credit;
-	u_new->matrix_size = matrix_size
+	u_new->matrix_size = matrix_size;
+	u_new->yielded = false;
 	//update start time
 	gettimeofday(&(u_new->start_time),NULL);
 
@@ -363,8 +363,6 @@ extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, 
 		u_new->uthread_tid = ksched_info->kthread_tot_uthreads++;
 		ksched_info->kthread_cur_uthreads++;
 		gt_spin_unlock(&ksched_info->ksched_lock);
-
-		printf("reached here 2\n");
 	}
 
 	/* XXX: ksched_find_target should be a function pointer */

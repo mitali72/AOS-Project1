@@ -13,6 +13,8 @@ typedef unsigned int uthread_group_t;
 #define UTHREAD_CANCELLED 0x08
 #define UTHREAD_DONE 0x10
 
+#include <stdbool.h>
+
 /* uthread struct : has all the uthread context info */
 typedef struct uthread_struct
 {
@@ -24,7 +26,7 @@ typedef struct uthread_struct
 	int alloted_credits; /* uthread total alloted credits */
 	int remaining_credits; /* uthread remaining credits */
 	int matrix_size;
-	bool yielded=false;
+	bool yielded;
 
 	struct timeval curr_start_time, curr_end_time, total_cpu_time, total_exec_time, start_time, end_time;
 

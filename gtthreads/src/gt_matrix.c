@@ -224,8 +224,8 @@ int main(int argc, char* argv[])
 			{	
 				
 				int tid = inx+grp_sz*matrix_ind+grp_sz*4*c;
-				printf("Thread created %d\n",tid);
-				printf("matrices init?\n");
+				// printf("Thread created %d\n",tid);
+				// printf("matrices init?\n");
 
 				uarg = &uargs[tid];
 				uarg->_A = &A;
@@ -264,25 +264,25 @@ int main(int argc, char* argv[])
     char filename_stats1[] = "output1.txt";
 
     // Open the file in write mode
-    filePtr = fopen(filename, "w");
+    filePtr = fopen(filename_stats1, "w");
 
     // Check if file opened successfully
     if (filePtr == NULL) {
-        printf("Unable to open file %s\n", filename);
+        printf("Unable to open file %s\n", filename_stats1);
         return 1;
     }
 
     // Write output to the file
-	fprintf(filePtr, "group_name, thread_number, cpu_time(us), wait_time(us), exec_time(us)\n")
+	fprintf(filePtr, "group_name, thread_number, cpu_time(us), wait_time(us), exec_time(us)\n");
 	for(int i=0;i<NUM_THREADS;i++)
 	{	
-		int cpu_time = (uthread_timing_log[i]->total_cpu_time.tv_sec*1000000  + uthread_timing_log[i]->total_cpu_time.tv_usec);
-		int exec_time = (uthread_timing_log[i]->total_exec_time.tv_sec*1000000  + uthread_timing_log[i]->total_exec_time.tv_usec);
+		int cpu_time = (uthread_timing_log[i].total_cpu_time.tv_sec*1000000  + uthread_timing_log[i].total_cpu_time.tv_usec);
+		int exec_time = (uthread_timing_log[i].total_exec_time.tv_sec*1000000  + uthread_timing_log[i].total_exec_time.tv_usec);
 
 		running_cpu_time[(int) i/8] += cpu_time;
 		running_exec_time[(int) i/8] += exec_time;
 
-		fprintf(filePtr, "c_%d_m_%d, %d, %d, %d, %d", uthread_timing_log[i].alloted_credits, uthread_timing_log[i].matrix_size, i, cpu_time, exec_time - cpu_time, exec_time);
+		fprintf(filePtr, "c_%d_m_%d, %d, %d, %d, %d\n", uthread_timing_log[i].alloted_credits, uthread_timing_log[i].matrix_size, i, cpu_time, exec_time - cpu_time, exec_time);
 	}
     // Close the file
     fclose(filePtr);
@@ -292,20 +292,20 @@ int main(int argc, char* argv[])
 	char filename_stats2[] = "output2.txt";
 
     // Open the file in write mode
-    filePtr = fopen(filename, "w");
+    filePtr = fopen(filename_stats2, "w");
 
     // Check if file opened successfully
     if (filePtr == NULL) {
-        printf("Unable to open file %s\n", filename);
+        printf("Unable to open file %s\n", filename_stats2);
         return 1;
     }
 
     // Write output to the file
-	fprintf(filePtr, "group_name, mean_cpu_time(us), mean_wait_time(us), mean_exec_time(us)\n")
+	fprintf(filePtr, "group_name, mean_cpu_time(us), mean_wait_time(us), mean_exec_time(us)\n");
 	for(int i=0;i<16;i++)
 	{	
 
-		fprintf(filePtr, "c_%d_m_%d, %f, %f, %f", credit_groups[(int)i/4], matrix_sizes[i%4], running_cpu_time[i]/(float) 8, (running_exec_time[i]-running_cpu_time[i])/(float) 8, running_exec_time[i]/(float) 8);
+		fprintf(filePtr, "c_%d_m_%d, %f, %f, %f\n", credit_groups[(int)i/4], matrix_sizes[i%4], running_cpu_time[i]/(float) 8, (running_exec_time[i]-running_cpu_time[i])/(float) 8, running_exec_time[i]/(float) 8);
 	}
     // Close the file
     fclose(filePtr);
