@@ -202,7 +202,7 @@ extern uthread_struct_t *sched_find_best_uthread(kthread_runqueue_t *kthread_run
 		if(ksched_shared_info.load_balance && kthreads_initialized==1)
 		{	
 
-			printf("kthread %d is load balancing\n", curr_cpu_id);
+			// printf("kthread %d is load balancing\n", curr_cpu_id);
 			// gt_spin_unlock(&(kthread_runq->kthread_runqlock)); 
 
 			// int num_cpus = (int)sysconf(_SC_NPROCESSORS_CONF);

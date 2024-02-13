@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
 	float running_exec_time[16] = {0.0};
 
 	FILE *filePtr;
-    char filename_stats1[] = "output1.txt";
+    char filename_stats1[] = "output_log/output1.txt";
 
     // Open the file in write mode
     filePtr = fopen(filename_stats1, "w");
@@ -289,7 +289,7 @@ int main(int argc, char* argv[])
 
 
 	// stats 2
-	char filename_stats2[] = "output2.txt";
+	char filename_stats2[] = "output_log/output2.txt";
 
     // Open the file in write mode
     filePtr = fopen(filename_stats2, "w");

@@ -150,7 +150,7 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 	{	
 
 	
-		printf("setting cpu runtime for Thread(id:%d)\n", u_obj->uthread_tid);
+		// printf("setting cpu runtime for Thread(id:%d)\n", u_obj->uthread_tid);
 		gettimeofday(&u_obj->curr_end_time, NULL);
 		struct timeval curr_cpu_run_time;
 		
