@@ -36,6 +36,24 @@ extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, 
 
 extern uthread_log_t uthread_timing_log[];
 
+extern void gt_yield()
+{
+	kthread_context_t *k_ctx;
+	uthread_struct_t *u_obj;
+	kthread_runqueue_t *kthread_runq
+
+	k_ctx = kthread_cpu_map[kthread_apic_id()];
+	kthread_runq = &(k_ctx->krunqueue);
+
+	if((u_obj = kthread_runq->cur_uthread))
+	{
+		u_obj->yielded = true;
+	}
+
+	uthread_schedule(&sched_find_best_uthread);
+	return;
+}
+
 /**********************************************************************/
 /** DEFNITIONS **/
 /**********************************************************************/
@@ -159,6 +177,8 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 			printf("Thread(id:%d) completed\n", u_obj->uthread_tid);
 			//update total exec time
 			timersub(&(u_obj->end_time), &(u_obj->start_time), &(u_obj->total_exec_time));
+			uthread_timing_log[u_obj->uthread_tid].alloted_credits = u_obj->alloted_credits;
+			uthread_timing_log[u_obj->uthread_tid].matrix_size = u_obj->matrix_size;
 			uthread_timing_log[u_obj->uthread_tid].total_cpu_time = u_obj->total_cpu_time;
 			uthread_timing_log[u_obj->uthread_tid].total_exec_time = u_obj->total_exec_time;
 
@@ -186,16 +206,27 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 			if(ksched_shared_info.sched_mode==1)
 			{
 				
-				printf("credits for Thread(id:%d) are %d\n",u_obj->uthread_tid, u_obj->remaining_credits);
+				// printf("credits for Thread(id:%d) are %d\n",u_obj->uthread_tid, u_obj->remaining_credits);
 				if(u_obj->remaining_credits>0)
 				{	
-					printf("Remaining credits for Thread(id:%d): %d\n", u_obj->uthread_tid, u_obj->remaining_credits);
-					add_to_runqueue(kthread_runq->active_runq, &(kthread_runq->kthread_runqlock), u_obj);
+
+					if(!u_obj->yielded)
+					{
+						add_to_runqueue(kthread_runq->active_runq, &(kthread_runq->kthread_runqlock), u_obj);
+					}
+					else
+					{	
+						u_obj->yielded = false;
+						add_to_runqueue(kthread_runq->expires_runq, &(kthread_runq->kthread_runqlock), u_obj);
+					}
+					// printf("Remaining credits for Thread(id:%d): %d\n", u_obj->uthread_tid, u_obj->remaining_credits);
+					
 				}
 				else
 				{	
-					printf("Restoring credits for Thread(id:%d): from %d to %d\n", u_obj->uthread_tid, u_obj->remaining_credits, u_obj->alloted_credits);
+					// printf("Restoring credits for Thread(id:%d): from %d to %d\n", u_obj->uthread_tid, u_obj->remaining_credits, u_obj->alloted_credits);
 					u_obj->remaining_credits = u_obj->alloted_credits;
+					u_obj->yielded = false;
 					add_to_runqueue(kthread_runq->expires_runq, &(kthread_runq->kthread_runqlock), u_obj);
 				}
 			}
@@ -287,7 +318,7 @@ static void uthread_context_func(int signo)
 
 extern kthread_runqueue_t *ksched_find_target(uthread_struct_t *);
 
-extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, uthread_group_t u_gid, int u_credit)
+extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, uthread_group_t u_gid, int u_credit, int matrix_size)
 {	
 	printf("reached here 1\n");
 	kthread_runqueue_t *kthread_runq;
@@ -311,6 +342,7 @@ extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, 
 	u_new->uthread_arg = u_arg;
 	u_new->alloted_credits = u_credit;
 	u_new->remaining_credits = u_credit;
+	u_new->matrix_size = matrix_size
 	//update start time
 	gettimeofday(&(u_new->start_time),NULL);
 

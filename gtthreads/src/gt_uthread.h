@@ -23,6 +23,8 @@ typedef struct uthread_struct
 	int last_cpu_id; /* last cpu it was executing on */
 	int alloted_credits; /* uthread total alloted credits */
 	int remaining_credits; /* uthread remaining credits */
+	int matrix_size;
+	bool yielded=false;
 
 	struct timeval curr_start_time, curr_end_time, total_cpu_time, total_exec_time, start_time, end_time;
 
@@ -44,9 +46,12 @@ typedef struct uthread_struct
 typedef struct uthread_log
 {
 	struct timeval total_cpu_time, total_exec_time, total_wait_time;
+	int alloted_credits;
+	int matrix_size;
 
 } uthread_log_t;
 
 struct __kthread_runqueue;
 extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(struct __kthread_runqueue *));
+extern void gt_yield();
 #endif
