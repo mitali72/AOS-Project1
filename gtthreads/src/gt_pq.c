@@ -256,7 +256,7 @@ extern uthread_struct_t *sched_find_best_uthread(kthread_runqueue_t *kthread_run
 		kthread_runq->active_runq = kthread_runq->expires_runq;
 		kthread_runq->expires_runq = runq;
 
-		runq = kthread_runq->expires_runq;
+		runq = kthread_runq->active_runq;
 		if(!runq->uthread_mask)
 		{
 			assert(!runq->uthread_tot);
@@ -323,7 +323,7 @@ extern uthread_struct_t *sched_find_best_uthread_group(kthread_runqueue_t *kthre
 		kthread_runq->active_runq = kthread_runq->expires_runq;
 		kthread_runq->expires_runq = runq;
 
-		runq = kthread_runq->expires_runq;
+		runq = kthread_runq->active_runq;
 		if(!runq->uthread_mask)
 		{
 			assert(!runq->uthread_tot);
