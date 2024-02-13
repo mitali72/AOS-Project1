@@ -88,7 +88,7 @@ static void print_matrix(matrix_t *mat)
 	return;
 }
 
-extern int uthread_create(uthread_t *, void *, void *, uthread_group_t, int);
+extern int uthread_create(uthread_t *, void *, void *, uthread_group_t, int, int);
 
 static void * uthread_mulmat(void *p)
 {

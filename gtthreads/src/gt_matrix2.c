@@ -88,7 +88,7 @@ static void print_matrix(matrix_t *mat)
 	return;
 }
 
-extern int uthread_create(uthread_t *, void *, void *, uthread_group_t, int);
+extern int uthread_create(uthread_t *, void *, void *, uthread_group_t, int, int);
 
 static void * uthread_mulmat(void *p)
 {
@@ -332,7 +332,7 @@ int main(int argc, char* argv[])
 		uarg->start_col = (uarg->gid * PER_GROUP_COLS);
 	#endif
 
-		uthread_create(&utids[inx], uthread_mulmat, uarg, uarg->gid, 0);
+		uthread_create(&utids[inx], uthread_mulmat, uarg, uarg->gid, 0, 0);
 	}
 
 	gtthread_app_exit();

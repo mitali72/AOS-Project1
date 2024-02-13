@@ -9,6 +9,7 @@
 #include "gt_uthread.h"
 #include "gt_pq.h"
 #include "gt_kthread.h"
+#include <stdbool.h>
 
 extern int kthreads_initialized;
 

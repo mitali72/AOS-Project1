@@ -2,7 +2,6 @@
 #define __GT_KTHREAD_H
 
 #include <stdlib.h>
-#include <stdbool.h>
 
 #define GT_MAX_CORES	16
 #define GT_MAX_KTHREADS GT_MAX_CORES
