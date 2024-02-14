@@ -163,7 +163,7 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 		{
 			//update credits
 			// 10c/30ms
-			float deduct_rate = 10.0/30000.0;
+			float deduct_rate = 25.0/30000.0;
 			u_obj->remaining_credits -= (int) deduct_rate* ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec));
 		}
 		

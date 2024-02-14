@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 		running_cpu_time[(int) i/8] += cpu_time;
 		running_exec_time[(int) i/8] += exec_time;
 
-		fprintf(filePtr, "c_%d_m_%d, %d, %d, %d, %d\n", uthread_timing_log[i].alloted_credits, uthread_timing_log[i].matrix_size, i, cpu_time, exec_time - cpu_time, exec_time);
+		fprintf(filePtr, "c_%d_m_%d,%d,%d,%d,%d\n", uthread_timing_log[i].alloted_credits, uthread_timing_log[i].matrix_size, i, cpu_time, exec_time - cpu_time, exec_time);
 	}
     // Close the file
     fclose(filePtr);
@@ -301,11 +301,11 @@ int main(int argc, char* argv[])
     }
 
     // Write output to the file
-	fprintf(filePtr, "group_name, mean_cpu_time(us), mean_wait_time(us), mean_exec_time(us)\n");
+	fprintf(filePtr, "group_name, mean_cpu_time(us), mean_wait_time(us), mean_exec_time(us), matrix_size\n");
 	for(int i=0;i<16;i++)
 	{	
 
-		fprintf(filePtr, "c_%d_m_%d, %f, %f, %f\n", credit_groups[(int)i/4], matrix_sizes[i%4], running_cpu_time[i]/(float) 8, (running_exec_time[i]-running_cpu_time[i])/(float) 8, running_exec_time[i]/(float) 8);
+		fprintf(filePtr, "c_%d_m_%d,%f,%f,%f,%d\n", credit_groups[(int)i/4], matrix_sizes[i%4], running_cpu_time[i]/(float) 8, (running_exec_time[i]-running_cpu_time[i])/(float) 8, running_exec_time[i]/(float) 8, matrix_sizes[i%4]);
 	}
     // Close the file
     fclose(filePtr);
