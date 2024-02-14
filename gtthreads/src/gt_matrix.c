@@ -206,8 +206,10 @@ int main(int argc, char* argv[])
 
 	gtthread_app_init(sched_mode, load_balance);
 
-	int credit_groups[] = {25,50,75,100};
-	int matrix_sizes[] = {32,64,128,256};
+	int credit_groups[] = {100,75,50,25};
+	// int credit_groups[] = {25,50,75,100};
+	// int matrix_sizes[] = {32,64,128,256};
+	int matrix_sizes[] = {256,128,64,32};
 
 	// printf("sched_mode and load_balance:%d, %d\n", sched_mode, load_balance);
 	init_matrices();
@@ -273,7 +275,7 @@ int main(int argc, char* argv[])
     }
 
     // Write output to the file
-	fprintf(filePtr, "group_name, thread_number, cpu_time(us), wait_time(us), exec_time(us)\n");
+	fprintf(filePtr, "group_name,thread_number,cpu_time(us),wait_time(us),exec_time(us)\n");
 	for(int i=0;i<NUM_THREADS;i++)
 	{	
 		int cpu_time = (uthread_timing_log[i].total_cpu_time.tv_sec*1000000  + uthread_timing_log[i].total_cpu_time.tv_usec);
@@ -301,7 +303,7 @@ int main(int argc, char* argv[])
     }
 
     // Write output to the file
-	fprintf(filePtr, "group_name, mean_cpu_time(us), mean_wait_time(us), mean_exec_time(us), matrix_size\n");
+	fprintf(filePtr, "group_name,mean_cpu_time(us),mean_wait_time(us),mean_exec_time(us),matrix_size\n");
 	for(int i=0;i<16;i++)
 	{	
 
