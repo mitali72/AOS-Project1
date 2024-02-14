@@ -48,7 +48,9 @@ extern void gt_yield()
 	if((u_obj = kthread_runq->cur_uthread))
 	{
 		u_obj->yielded = true;
+		printf("Thread id:(%d) , credits before yield : %d", u_obj->uthread_tid, u_obj->remaining_credits);
 	}
+
 
 	uthread_schedule(&sched_find_best_uthread);
 	return;
@@ -162,9 +164,12 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 		if(ksched_shared_info.sched_mode==1)
 		{
 			//update credits
-			// 10c/30ms
+			// 25c/30ms
 			float deduct_rate = 25.0/30000.0;
-			u_obj->remaining_credits -= (int) deduct_rate* ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec));
+			printf("deduct time %f\n", ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec)));
+			printf("deduct value %d\n", (int) (deduct_rate* ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec))));
+			u_obj->remaining_credits -= (int) (deduct_rate* ((float)(curr_cpu_run_time.tv_sec*1000000 + curr_cpu_run_time.tv_usec)));
+			
 		}
 		
 
@@ -174,7 +179,7 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 
 		if(u_obj->uthread_state & (UTHREAD_DONE | UTHREAD_CANCELLED))
 		{	
-			printf("Thread(id:%d) completed\n", u_obj->uthread_tid);
+			// printf("Thread(id:%d) completed\n", u_obj->uthread_tid);
 			//update total exec time
 			timersub(&(u_obj->end_time), &(u_obj->start_time), &(u_obj->total_exec_time));
 			uthread_timing_log[u_obj->uthread_tid].alloted_credits = u_obj->alloted_credits;
@@ -202,31 +207,27 @@ extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kt
 		{
 			/* XXX: Apply uthread_group_penalty before insertion */
 			u_obj->uthread_state = UTHREAD_RUNNABLE;
+			// printf("Thread id:(%d) , remaining credits : %d\n", u_obj->uthread_tid, u_obj->remaining_credits);
+
+			if(u_obj->yielded)
+			{
+				printf("Thread id:(%d) , credits after yield : %d\n", u_obj->uthread_tid, u_obj->remaining_credits);
+				u_obj->yielded = false;
+
+			}
 
 			if(ksched_shared_info.sched_mode==1)
 			{
 				
-				// printf("credits for Thread(id:%d) are %d\n",u_obj->uthread_tid, u_obj->remaining_credits);
 				if(u_obj->remaining_credits>0)
 				{	
 
-					if(!u_obj->yielded)
-					{
-						add_to_runqueue(kthread_runq->active_runq, &(kthread_runq->kthread_runqlock), u_obj);
-					}
-					else
-					{	
-						u_obj->yielded = false;
-						add_to_runqueue(kthread_runq->expires_runq, &(kthread_runq->kthread_runqlock), u_obj);
-					}
-					// printf("Remaining credits for Thread(id:%d): %d\n", u_obj->uthread_tid, u_obj->remaining_credits);
+					add_to_runqueue(kthread_runq->active_runq, &(kthread_runq->kthread_runqlock), u_obj);	
 					
 				}
 				else
 				{	
-					// printf("Restoring credits for Thread(id:%d): from %d to %d\n", u_obj->uthread_tid, u_obj->remaining_credits, u_obj->alloted_credits);
 					u_obj->remaining_credits = u_obj->alloted_credits;
-					u_obj->yielded = false;
 					add_to_runqueue(kthread_runq->expires_runq, &(kthread_runq->kthread_runqlock), u_obj);
 				}
 			}

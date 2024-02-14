@@ -28,6 +28,10 @@
 
 int sched_mode;
 bool load_balance=false;
+bool yield=false;
+int tid_yield = 24;
+int yield_cnt = 2;
+int yield_interval = 10;
 
 uthread_log_t uthread_timing_log[NUM_THREADS];
 
@@ -123,7 +127,16 @@ static void * uthread_mulmat(void *p)
 
 	for(i = start_row; i < end_row; i++)
 		for(j = start_col; j < end_col; j++)
-			for(k = 0; k < SIZE; k++)
+			for(k = 0; k < end_row; k++)
+
+				if(yield && yield_cnt>0)
+				{	
+					
+					if(i==end_row/3 && ptr->tid % yield_interval == 0 && yield_cnt >0 ){
+						yield_cnt --;
+						gt_yield();
+					}
+				}
 				ptr->_C->m[i][j] += ptr->_A->m[i][k] * ptr->_B->m[k][j];
 
 #ifdef GT_THREADS
@@ -181,6 +194,12 @@ void parse_args(int argc, char* argv[])
 					printf("use credit scheduler\n");
 				}
 			}
+			else if(!strcmp(&argv[inx][1], "yd"))
+			{
+				//TODO: add option of load balancing mechanism
+				yield = true;
+				printf("enable yielding for a thread\n");
+			}
 		}
 	}
 
@@ -207,8 +226,6 @@ int main(int argc, char* argv[])
 	gtthread_app_init(sched_mode, load_balance);
 
 	int credit_groups[] = {100,75,50,25};
-	// int credit_groups[] = {25,50,75,100};
-	// int matrix_sizes[] = {32,64,128,256};
 	int matrix_sizes[] = {256,128,64,32};
 
 	// printf("sched_mode and load_balance:%d, %d\n", sched_mode, load_balance);
@@ -227,7 +244,6 @@ int main(int argc, char* argv[])
 				
 				int tid = inx+grp_sz*matrix_ind+grp_sz*4*c;
 				// printf("Thread created %d\n",tid);
-				// printf("matrices init?\n");
 
 				uarg = &uargs[tid];
 				uarg->_A = &A;
@@ -247,8 +263,6 @@ int main(int argc, char* argv[])
 								/* Wanted to split the columns by groups !!! */
 								uarg->start_col = (uarg->gid * PER_GROUP_COLS);
 				#endif
-
-				printf("Thread meta data set %d\n",tid);
 
 				uthread_create(&utids[tid], uthread_mulmat, uarg, uarg->gid, credit_groups[c], matrix_sizes[matrix_ind]);
 			}
